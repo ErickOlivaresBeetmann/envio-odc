@@ -91,7 +91,7 @@ def odc(carga, multi, fecha_inicio, fecha_fin):
                 else:
                     
                     now = datetime.now() - timedelta(.208333)
-                    cliente = cliente_sql
+                    cliente = cliente_sql[0]
                     Metodos = 'Promedio'
                     TOTAL = values_sum
                     fechas = date_1.strftime('%Y-%m-%d') + ',' + date_2.strftime('%Y-%m-%d') + ',' + date_3.strftime('%Y-%m-%d') + ',' + date_4.strftime('%Y-%m-%d')
@@ -168,7 +168,7 @@ def odc_all(carga_, multi, fecha_inicio, fecha_fin):
                     else:
                         
                         now = datetime.now() - timedelta(.208333)
-                        cliente = cliente_sql
+                        cliente = cliente_sql[0]
                         Metodos = 'Promedio'
                         TOTAL = values_sum
                         fechas = date_1.strftime('%Y-%m-%d') + ',' + date_2.strftime('%Y-%m-%d') + ',' + date_3.strftime('%Y-%m-%d') + ',' + date_4.strftime('%Y-%m-%d')
@@ -188,8 +188,8 @@ def menu_consulta_dias_rango(carga, multi):
     input_fin = ''
 
     while True:
-        input_inicio = input(f"Coloca el periodo de Inicio (YYYY-MM-DD): ") or "2023-01-01"
-        input_fin = input(f"Coloca el periodo de Fin (YYYY-MM-DD): ") or "2023-01-01"
+        input_inicio = input(f"Coloca el periodo de Inicio (YYYY-MM-DD): ") 
+        input_fin = input(f"Coloca el periodo de Fin (YYYY-MM-DD): ") 
 
         try:
             fecha_inicio = datetime.strptime(input_inicio, '%Y-%m-%d')
@@ -209,7 +209,7 @@ def menu_consulta_dias_rango(carga, multi):
 def menu_consulta_input(carga):
     if carga == 'todos':
         while True:
-            multi = input(f"Coloca el multiplicador (Default 0.2): ") or '.2'
+            multi = input(f"Coloca el multiplicador (Default 1): ") or '1'
 
             if multi.strip():
                 return menu_consulta_dias_rango(carga, multi)
@@ -218,7 +218,7 @@ def menu_consulta_input(carga):
     
     else:
         while True:
-            multi = input(f"Coloca el multiplicador (Default 0.2): ") or '.2'
+            multi = input(f"Coloca el multiplicador (Default 1): ") or '1'
 
             if multi.strip():
                 return menu_consulta_dias_rango(carga, multi)
