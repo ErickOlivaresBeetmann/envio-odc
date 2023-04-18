@@ -45,7 +45,7 @@ def odc(carga, multi, fecha_inicio, fecha_fin):
     consulta_cliente = cnxn.execute(f"SELECT distinct icc.cliente AS CLIENTE FROM informacion_entrada_operacion as iep INNER JOIN informacion_contratos_clientes as icc ON iep.rpu = icc.rpu LEFT JOIN Clave_de_carga_registro AS c ON iep.clave_de_carga = c.clave WHERE iep.clave_de_carga = '{carga}' ")
     cliente_sql = consulta_cliente.fetchone()
 
-    consulta_fp = cnxn.execute(f"SELECT c.division_tarifaria FROM Clave_de_carga_registro AS c INNER JOIN informacion_entrada_operacion AS ieo on c.clave = ieo.clave_de_carga WHERE iep.clave_de_carga = '{carga}' ")
+    consulta_fp = cnxn.execute(f"SELECT c.division_tarifaria FROM Clave_de_carga_registro AS c INNER JOIN informacion_entrada_operacion AS ieo on c.clave = ieo.clave_de_carga WHERE ieo.clave_de_carga = '{carga}' ")
     cliente_fp = consulta_fp.fetchone()
 
     while current_date <= final_date:
@@ -103,11 +103,9 @@ def odc(carga, multi, fecha_inicio, fecha_fin):
                     fechas = date_1.strftime('%Y-%m-%d') + ',' + date_2.strftime('%Y-%m-%d') + ',' + date_3.strftime('%Y-%m-%d') + ',' + date_4.strftime('%Y-%m-%d')
                     dias = '0'
 
-                    cursor = cnxn.cursor()
                     query_almacenar = "INSERT INTO [dbo].[ODC Beetmann] ([Fecha de envio], [Fecha de la oferta de compra], [Cliente], [Metodo ], [Parametros usados (dias utlizados , dia mas parecido buscado)], [Dias antes / despues al dia mas parecido], [Hora 1], [Hora 2], [Hora 3], [Hora 4], [Hora 5], [Hora 6], [Hora 7], [Hora 8], [Hora 9], [Hora 10], [Hora 11], [Hora 12], [Hora 13], [Hora 14], [Hora 15], [Hora 16], [Hora 17], [Hora 18], [Hora 19], [Hora 20], [Hora 21], [Hora 22], [Hora 23], [Hora 24], [TOTAL]) values(?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
                     values = (now , datetime.strptime(ODC_date, '%d/%m/%Y'), cliente, Metodos, fechas, dias, hours['1'], hours['2'], hours['3'], hours['4'], hours['5'], hours['6'], hours['7'], hours['8'], hours['9'], hours['10'], hours['11'], hours['12'], hours['13'], hours['14'], hours['15'], hours['16'], hours['17'], hours['18'], hours['19'], hours['20'], hours['21'], hours['22'], hours['23'], hours['24'], TOTAL)
-                    cursor.execute(query_almacenar, values)
-
+                    cnxn.execute(query_almacenar, values)
                     print('Oferta de compra enviada y base de datos actualizada')
 
         current_date += timedelta(days=1)
@@ -128,7 +126,7 @@ def odc_all(carga_, multi, fecha_inicio, fecha_fin):
         consulta_cliente = cnxn.execute(f"SELECT distinct icc.cliente AS CLIENTE FROM informacion_entrada_operacion as iep INNER JOIN informacion_contratos_clientes as icc ON iep.rpu = icc.rpu LEFT JOIN Clave_de_carga_registro AS c ON iep.clave_de_carga = c.clave WHERE iep.clave_de_carga = '{carga[0]}' ")
         cliente_sql = consulta_cliente.fetchone()
 
-        consulta_fp = cnxn.execute(f"SELECT c.division_tarifaria FROM Clave_de_carga_registro AS c INNER JOIN informacion_entrada_operacion AS ieo on c.clave = ieo.clave_de_carga WHERE iep.clave_de_carga = '{carga}' ")
+        consulta_fp = cnxn.execute(f"SELECT c.division_tarifaria FROM Clave_de_carga_registro AS c INNER JOIN informacion_entrada_operacion AS ieo on c.clave = ieo.clave_de_carga WHERE ieo.clave_de_carga = '{carga}' ")
         cliente_fp = consulta_fp.fetchone()
 
         while current_date <= final_date:
@@ -186,11 +184,9 @@ def odc_all(carga_, multi, fecha_inicio, fecha_fin):
                         fechas = date_1.strftime('%Y-%m-%d') + ',' + date_2.strftime('%Y-%m-%d') + ',' + date_3.strftime('%Y-%m-%d') + ',' + date_4.strftime('%Y-%m-%d')
                         dias = '0'
 
-                        cursor = cnxn.cursor()
                         query_almacenar = "INSERT INTO [dbo].[ODC Beetmann] ([Fecha de envio], [Fecha de la oferta de compra], [Cliente], [Metodo ], [Parametros usados (dias utlizados , dia mas parecido buscado)], [Dias antes / despues al dia mas parecido], [Hora 1], [Hora 2], [Hora 3], [Hora 4], [Hora 5], [Hora 6], [Hora 7], [Hora 8], [Hora 9], [Hora 10], [Hora 11], [Hora 12], [Hora 13], [Hora 14], [Hora 15], [Hora 16], [Hora 17], [Hora 18], [Hora 19], [Hora 20], [Hora 21], [Hora 22], [Hora 23], [Hora 24], [TOTAL]) values(?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
                         values = (now , datetime.strptime(ODC_date, '%d/%m/%Y'), cliente, Metodos, fechas, dias, hours['1'], hours['2'], hours['3'], hours['4'], hours['5'], hours['6'], hours['7'], hours['8'], hours['9'], hours['10'], hours['11'], hours['12'], hours['13'], hours['14'], hours['15'], hours['16'], hours['17'], hours['18'], hours['19'], hours['20'], hours['21'], hours['22'], hours['23'], hours['24'], TOTAL)
-                        cursor.execute(query_almacenar, values)
-
+                        cnxn.execute(query_almacenar, values)
                         print('Oferta de compra enviada y base de datos actualizada')
 
             current_date += timedelta(days=1)
