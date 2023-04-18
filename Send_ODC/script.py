@@ -45,6 +45,9 @@ def odc(carga, multi, fecha_inicio, fecha_fin):
     consulta_cliente = cnxn.execute(f"SELECT distinct icc.cliente AS CLIENTE FROM informacion_entrada_operacion as iep INNER JOIN informacion_contratos_clientes as icc ON iep.rpu = icc.rpu LEFT JOIN Clave_de_carga_registro AS c ON iep.clave_de_carga = c.clave WHERE iep.clave_de_carga = '{carga}' ")
     cliente_sql = consulta_cliente.fetchone()
 
+    consulta_fp = cnxn.execute(f"SELECT c.division_tarifaria FROM Clave_de_carga_registro AS c INNER JOIN informacion_entrada_operacion AS ieo on c.clave = ieo.clave_de_carga WHERE iep.clave_de_carga = '{carga}' ")
+    cliente_fp = consulta_fp.fetchone()
+
     while current_date <= final_date:
         query = f"SELECT *  FROM [dbo].[ODC Beetmann]  WHERE [Fecha de la oferta de compra] = '{current_date}' and Cliente = '{cliente_sql[0]}'"
         existing_ODC = pd.read_sql(query, cnxn)
@@ -56,8 +59,11 @@ def odc(carga, multi, fecha_inicio, fecha_fin):
             date_1, date_2 = current_date - timedelta(days = 7), current_date - timedelta(days = 14)
             date_3, date_4 = current_date - timedelta(days = 21), current_date - timedelta(days = 28)
 
-            consulta_sql = f" SELECT table_1.Hora, AVG(table_1.Valor) AS Valor FROM  (SELECT Convert(DATE, (([Fecha]+[Hora])-(.003472222))) AS 'Fecha', \
-            ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) AS 'Hora', (ROUND(((sum([Kwhe]))/1000),4)*1.108647450110865000) * {multi} AS 'Valor' \
+            consulta_fp = cnxn.execute(f"SELECT FDP FROM factor_de_perdidas WHERE Region LIKE '%{cliente_fp}%'")
+            fp_client = consulta_fp.fetchone()
+
+            consulta_sql = f"SELECT table_1.Hora, AVG(table_1.Valor) AS Valor FROM  (SELECT Convert(DATE, (([Fecha]+[Hora])-(.003472222))) AS 'Fecha', \
+            ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) AS 'Hora', (ROUND(((sum([Kwhe]))/1000),4) * (1 + {fp_client})) * {multi} AS 'Valor' \
             FROM [dbo].[Cincominutales_medimem] WHERE (Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_1}' OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_2}'\
             OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_3}' OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_4}') and (equipo = '{equipo[0]}' )\
             GROUP BY  Convert(DATE, (([Fecha]+[Hora])-(.003472222))), ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) )  AS table_1  GROUP BY table_1.Hora"
@@ -122,6 +128,9 @@ def odc_all(carga_, multi, fecha_inicio, fecha_fin):
         consulta_cliente = cnxn.execute(f"SELECT distinct icc.cliente AS CLIENTE FROM informacion_entrada_operacion as iep INNER JOIN informacion_contratos_clientes as icc ON iep.rpu = icc.rpu LEFT JOIN Clave_de_carga_registro AS c ON iep.clave_de_carga = c.clave WHERE iep.clave_de_carga = '{carga[0]}' ")
         cliente_sql = consulta_cliente.fetchone()
 
+        consulta_fp = cnxn.execute(f"SELECT c.division_tarifaria FROM Clave_de_carga_registro AS c INNER JOIN informacion_entrada_operacion AS ieo on c.clave = ieo.clave_de_carga WHERE iep.clave_de_carga = '{carga}' ")
+        cliente_fp = consulta_fp.fetchone()
+
         while current_date <= final_date:
             query = f"SELECT *  FROM [dbo].[ODC Beetmann]  WHERE [Fecha de la oferta de compra] = '{current_date}' and Cliente = '{cliente_sql[0]}'"
             existing_ODC = pd.read_sql(query, cnxn)
@@ -133,8 +142,11 @@ def odc_all(carga_, multi, fecha_inicio, fecha_fin):
                 date_1, date_2 = current_date - timedelta(days = 7), current_date - timedelta(days = 14)
                 date_3, date_4 = current_date - timedelta(days = 21), current_date - timedelta(days = 28)
 
-                consulta_sql = f" SELECT table_1.Hora, AVG(table_1.Valor) AS Valor FROM  (SELECT Convert(DATE, (([Fecha]+[Hora])-(.003472222))) AS 'Fecha', \
-                ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) AS 'Hora', (ROUND(((sum([Kwhe]))/1000),4)*1.108647450110865000) * {multi} AS 'Valor' \
+                consulta_fp = cnxn.execute(f"SELECT FDP FROM factor_de_perdidas WHERE Region LIKE '%{cliente_fp}%'")
+                fp_client = consulta_fp.fetchone()
+
+                consulta_sql = f"SELECT table_1.Hora, AVG(table_1.Valor) AS Valor FROM  (SELECT Convert(DATE, (([Fecha]+[Hora])-(.003472222))) AS 'Fecha', \
+                ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) AS 'Hora', (ROUND(((sum([Kwhe]))/1000),4) * (1 + {fp_client}) ) * {multi} AS 'Valor' \
                 FROM [dbo].[Cincominutales_medimem] WHERE (Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_1}' OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_2}'\
                 OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_3}' OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_4}') and (equipo = '{equipo[0]}' )\
                 GROUP BY  Convert(DATE, (([Fecha]+[Hora])-(.003472222))), ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) )  AS table_1  GROUP BY table_1.Hora"
