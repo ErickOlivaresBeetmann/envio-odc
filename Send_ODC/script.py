@@ -59,11 +59,11 @@ def odc(carga, multi, fecha_inicio, fecha_fin):
             date_1, date_2 = current_date - timedelta(days = 7), current_date - timedelta(days = 14)
             date_3, date_4 = current_date - timedelta(days = 21), current_date - timedelta(days = 28)
 
-            consulta_fp = cnxn.execute(f"SELECT FDP FROM factor_de_perdidas WHERE Region LIKE '%{cliente_fp}%'")
+            consulta_fp = cnxn.execute(f"SELECT FDP FROM factor_de_perdidas WHERE Region LIKE '%{cliente_fp[0]}%'")
             fp_client = consulta_fp.fetchone()
 
             consulta_sql = f"SELECT table_1.Hora, AVG(table_1.Valor) AS Valor FROM  (SELECT Convert(DATE, (([Fecha]+[Hora])-(.003472222))) AS 'Fecha', \
-            ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) AS 'Hora', (ROUND(((sum([Kwhe]))/1000),4) * (1 + {fp_client})) * {multi} AS 'Valor' \
+            ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) AS 'Hora', (ROUND(((sum([Kwhe]))/1000),4) * (1 + {fp_client[0]})) * {multi} AS 'Valor' \
             FROM [dbo].[Cincominutales_medimem] WHERE (Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_1}' OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_2}'\
             OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_3}' OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_4}') and (equipo = '{equipo[0]}' )\
             GROUP BY  Convert(DATE, (([Fecha]+[Hora])-(.003472222))), ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) )  AS table_1  GROUP BY table_1.Hora"
@@ -142,11 +142,11 @@ def odc_all(carga_, multi, fecha_inicio, fecha_fin):
                 date_1, date_2 = current_date - timedelta(days = 7), current_date - timedelta(days = 14)
                 date_3, date_4 = current_date - timedelta(days = 21), current_date - timedelta(days = 28)
 
-                consulta_fp = cnxn.execute(f"SELECT FDP FROM factor_de_perdidas WHERE Region LIKE '%{cliente_fp}%'")
+                consulta_fp = cnxn.execute(f"SELECT FDP FROM factor_de_perdidas WHERE Region LIKE '%{cliente_fp[0]}%'")
                 fp_client = consulta_fp.fetchone()
 
                 consulta_sql = f"SELECT table_1.Hora, AVG(table_1.Valor) AS Valor FROM  (SELECT Convert(DATE, (([Fecha]+[Hora])-(.003472222))) AS 'Fecha', \
-                ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) AS 'Hora', (ROUND(((sum([Kwhe]))/1000),4) * (1 + {fp_client}) ) * {multi} AS 'Valor' \
+                ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) AS 'Hora', (ROUND(((sum([Kwhe]))/1000),4) * (1 + {fp_client[0]}) ) * {multi} AS 'Valor' \
                 FROM [dbo].[Cincominutales_medimem] WHERE (Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_1}' OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_2}'\
                 OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_3}' OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_4}') and (equipo = '{equipo[0]}' )\
                 GROUP BY  Convert(DATE, (([Fecha]+[Hora])-(.003472222))), ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) )  AS table_1  GROUP BY table_1.Hora"
