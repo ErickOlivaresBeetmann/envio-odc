@@ -48,8 +48,10 @@ def odc(carga, multi, fecha_inicio, fecha_fin):
     consulta_fp = cnxn.execute(f"SELECT c.division_tarifaria FROM Clave_de_carga_registro AS c INNER JOIN informacion_entrada_operacion AS ieo on c.clave = ieo.clave_de_carga WHERE ieo.clave_de_carga = '{carga}' ")
     cliente_fp = consulta_fp.fetchone()
 
+    print(cliente_sql,carga)
+
     while current_date <= final_date:
-        query = f"SELECT *  FROM [dbo].[ODC Beetmann]  WHERE [Fecha de la oferta de compra] = '{current_date}' and Cliente = '{cliente_sql[0]}'"
+        query = f"SELECT *  FROM [dbo].[ODC Beetmann]  WHERE [Fecha de la oferta de compra] = '{current_date}' and Cliente = '{carga}'"
         existing_ODC = pd.read_sql(query, cnxn)
         
         if not existing_ODC.empty:
@@ -64,16 +66,19 @@ def odc(carga, multi, fecha_inicio, fecha_fin):
 
             consulta_sql = f"SELECT table_1.Hora, AVG(table_1.Valor) AS Valor FROM  (SELECT Convert(DATE, (([Fecha]+[Hora])-(.003472222))) AS 'Fecha', \
             ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) AS 'Hora', (ROUND(((sum([Kwhe]))/1000),4) * (1 + {fp_client[0]})) * {multi} AS 'Valor' \
-            FROM [dbo].[Cincominutales_medimem] WHERE (Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_1}' OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_2}'\
-            OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_3}' OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_4}') and (equipo = '{equipo[0]}' )\
+            FROM [dbo].[Cincominutales_medimem] as cinc left join  informacion_entrada_operacion as info \
+            on cinc.Equipo = info.equipo_medimem where (Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_1}' OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_2}'\
+            OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_3}' OR Convert(DATE, (([Fecha]+[Hora])-(.003472222))) = '{date_4}') and (clave_de_carga = '{carga}' )\
             GROUP BY  Convert(DATE, (([Fecha]+[Hora])-(.003472222))), ((DATEPART(hour,(([Fecha]+[Hora])-(.003472222))))+1) )  AS table_1  GROUP BY table_1.Hora"
             df = pd.DataFrame(pd.read_sql(consulta_sql, cnxn))
+            print(consulta_sql)
+            print(df)
             
             if df.empty:
-                print("No se encontró información para esta fecha")
+                print("NO se encontró información para el calculo de la ODC")
 
             else:
-                print("Se encontró información para esta fecha")
+                print("Se encontró información para generar la ODC")
                 values_sum = sum(df['Valor'])
 
                 url = 'https://ws01.cenace.gob.mx:8082/mxswmem/EnviarOfertaCompraEnergiaService.asmx?wsdl'
@@ -95,9 +100,10 @@ def odc(carga, multi, fecha_inicio, fecha_fin):
                     exit()
 
                 else:
+                    print("Se ENVIO CON EXITO LA ODC PARA EL DIA: ", current_date)
                     
                     now = datetime.now() - timedelta(.208333)
-                    cliente = cliente_sql[0]
+                    cliente = carga
                     Metodos = 'Promedio'
                     TOTAL = values_sum
                     fechas = date_1.strftime('%Y-%m-%d') + ',' + date_2.strftime('%Y-%m-%d') + ',' + date_3.strftime('%Y-%m-%d') + ',' + date_4.strftime('%Y-%m-%d')
