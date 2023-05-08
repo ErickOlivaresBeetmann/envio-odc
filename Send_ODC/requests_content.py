@@ -6,7 +6,7 @@ body = """
 	                <!--Optional:-->
 	                <xn:userNameToken>BTMNN</xn:userNameToken>
 	                <!--Optional:-->
-	                <xn:passwordToken>BTMNSIN</xn:passwordToken>
+	                <xn:passwordToken>Beetm2023$</xn:passwordToken>
 	                <!--Optional:-->
 	                <xn:hd>9253798B5209E6B97F6BDE4CB414FFA1BE207E68</xn:hd>
 	            </xn:Authentication>
